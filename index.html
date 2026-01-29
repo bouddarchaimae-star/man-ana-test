@@ -63,7 +63,6 @@
 </div>
 
 <script>
-    // قاعدة بيانات الأسئلة (سأضع لك نماذج مكثفة هنا)
     const allQuizzes = [
         {
             name: "Big Five - الخمسة الكبرى",
@@ -95,10 +94,8 @@
                 "تحافظ على ترتيب مكتبك دائماً.", "تستمتع بالنقاشات الفلسفية الطويلة."
             ]
         }
-        // ... يمكنك إضافة بقية الـ 18 اختبار بنفس التنسيق هنا
     ];
 
-    // تكملة القائمة لـ 20 اسم اختبار
     const extraNames = [
         "Enneagram - الأنماط التسعة", "CliftonStrengths - نقاط القوة", "اختبار الشخصيات الشائع", 
         "Strong Interest - المسار المهني", "التفكير النقدي", "أسلوب التعامل مع الآخرين", 
@@ -111,10 +108,8 @@
     let currentQIdx = 0;
     let totalScore = 0;
 
-    // بناء القائمة الرئيسية
     function initMenu() {
         const menuDiv = document.getElementById('menu');
-        // عرض الاختبارات الموجودة في البيانات + الأسماء الإضافية
         const allNames = [...allQuizzes.map(q => q.name), ...extraNames];
         
         allNames.forEach((name, i) => {
@@ -155,7 +150,7 @@
     function showResult() {
         document.getElementById('quiz-box').style.display = 'none';
         document.getElementById('result-box').style.display = 'block';
-        const finalPts = Math.round((totalScore / 40) * 100); // النسبة المئوية
+        const finalPts = Math.round((totalScore / 40) * 100);
         document.getElementById('final-score').innerText = finalPts + "%";
         
         let msg = "";
@@ -168,6 +163,8 @@
 
     initMenu();
 </script>
+
+<script data-goatcounter="https://man-ana.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
 </body>
 </html>
