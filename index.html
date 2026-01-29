@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>من أنا؟ | المنصة الشاملة للاختبارات النفسية</title>
+    <style>
+        :root { --primary: #6c5ce7; --secondary: #a2dff7; --dark: #2d3436; --white: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--secondary), var(--primary)); min-height: 100vh; margin: 0; padding: 20px; color: var(--dark); }
+        .container { background: var(--white); max-width: 900px; margin: 30px auto; border-radius: 25px; padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        h1 { text-align: center; color: white; font-size: 3rem; margin-bottom: 10px; text-shadow: 3px 3px 6px rgba(0,0,0,0.2); }
+        .subtitle { text-align: center; color: white; margin-bottom: 40px; opacity: 0.9; }
+        
+        /* قائمة الاختبارات */
+        .quiz-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .quiz-card { background: #f1f2f6; border-right: 5px solid var(--primary); padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-weight: bold; font-size: 1.1rem; }
+        .quiz-card:hover { background: var(--primary); color: white; transform: scale(1.03); }
+
+        /* منطقة السؤال */
+        #quiz-box { display: none; }
+        .progress-bar { height: 12px; background: #dfe6e9; border-radius: 6px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; }
+        .question-num { color: var(--primary); font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        .question-text { font-size: 1.6rem; margin-bottom: 35px; line-height: 1.5; color: #2d3436; }
+        .options { display: grid; gap: 15px; }
+        .opt-btn { background: #f9f9f9; border: 2px solid #eee; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; text-align: right; }
+        .opt-btn:hover { border-color: var(--primary); background: #f0edff; }
+
+        /* النتيجة */
+        #result-box { display: none; text-align: center; }
+        .score-circle { width: 150px; height: 150px; border-radius: 50%; border: 10px solid var(--primary); line-height: 150px; font-size: 2.5rem; margin: 20px auto; color: var(--primary); font-weight: bold; }
+        .btn-home { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; margin-top: 30px; }
+    </style>
+</head>
+<body>
+
+<h1>من أنا؟</h1>
+<p class="subtitle">أكبر منصة عربية للاختبارات النفسية والذكاء</p>
+
+<div class="container">
+    <div id="home">
+        <h2 style="margin-top:0">اختر اختباراً (20 اختبار متاح):</h2>
+        <div class="quiz-grid" id="menu"></div>
+    </div>
+
+    <div id="quiz-box">
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        <div class="question-num" id="q-info"></div>
+        <div id="q-text" class="question-text"></div>
+        <div class="options">
+            <button class="opt-btn" onclick="handleAnswer(0)">✖ لا ينطبق عليّ أبداً</button>
+            <button class="opt-btn" onclick="handleAnswer(1)">➖ ينطبق أحياناً</button>
+            <button class="opt-btn" onclick="handleAnswer(2)">✔ ينطبق تماماً</button>
+        </div>
+    </div>
+
+    <div id="result-box">
+        <h2 id="res-title"></h2>
+        <div class="score-circle" id="final-score">0</div>
+        <p id="res-desc" style="font-size: 1.3rem; line-height: 1.8;"></p>
+        <button class="btn-home" onclick="location.reload()">العودة للقائمة الرئيسية</button>
+    </div>
+</div>
+
+<script>
+    // قاعدة بيانات الأسئلة (سأضع لك نماذج مكثفة هنا)
+    const allQuizzes = [
+        {
+            name: "Big Five - الخمسة الكبرى",
+            questions: [
+                "أستمتع بكوني وسط مجموعة كبيرة من الناس.", "أقلق بشأن الأشياء أكثر من الآخرين.", 
+                "أحب تجربة الأطعمة والأماكن الجديدة دائماً.", "أتعاطف مع مشاعر الآخرين بسهولة.",
+                "أحافظ على ممتلكاتي منظمة ومرتبة.", "أميل إلى انتقاد الآخرين أحياناً.",
+                "أشعر بالنشاط عند قضاء الوقت مع الغرباء.", "أواجه صعوبة في الالتزام بالجدول الزمني.",
+                "نادراً ما أشعر بالاكتئاب أو الحزن المفاجئ.", "لدي خيال واسع وأفكار إبداعية.",
+                "أثق في نوايا الناس من حولي.", "أفكر ملياً قبل اتخاذ أي خطوة.",
+                "أفضل البقاء في المنزل على الخروج للحفلات.", "أتوتر بسرعة عند ضغط العمل.",
+                "أحب حل الألغاز والمشكلات المعقدة.", "أحب مساعدة الآخرين دون مقابل.",
+                "أنهي مهامي دائماً قبل موعدها.", "أحب أن أكون مركز الاهتمام.",
+                "أتقبل الأفكار المختلفة حتى لو خالفتني.", "أعاني من تقلبات مزاجية مستمرة."
+            ]
+        },
+        {
+            name: "MBTI - أنماط الشخصية",
+            questions: [
+                "تفضل التخطيط للرحلة بدلاً من العفوية.", "تستمد طاقتك من الجلوس وحيداً.",
+                "تعتمد على الحقائق أكثر من حدسك.", "تتخذ قراراتك بناءً على المنطق.",
+                "تحب إنهاء المشاريع قبل البدء بغيرها.", "تلاحظ التفاصيل الصغيرة التي يغفل عنها غيرك.",
+                "تتحدث أكثر مما تسمع في الجلسات.", "تتأثر بمشاعر الآخرين عند اتخاذ قرار.",
+                "تفضل القواعد الواضحة على الاحتمالات.", "تتأقلم مع التغييرات المفاجئة بسهولة.",
+                "تميل للتركيز على المستقبل أكثر من الحاضر.", "تفضل العمل الجماعي على الفردي.",
+                "تعتبر نفسك شخصاً واقعياً جداً.", "تكره الصراعات والمواجهات المباشرة.",
+                "تحب الجداول الزمنية الصارمة.", "تتبع إلهامك اللحظي في العمل.",
+                "تهتم بالمعنى العميق للأمور.", "تفضل أن تكون محبوباً على أن تكون مطاعاً.",
+                "تحافظ على ترتيب مكتبك دائماً.", "تستمتع بالنقاشات الفلسفية الطويلة."
+            ]
+        }
+        // ... يمكنك إضافة بقية الـ 18 اختبار بنفس التنسيق هنا
+    ];
+
+    // تكملة القائمة لـ 20 اسم اختبار
+    const extraNames = [
+        "Enneagram - الأنماط التسعة", "CliftonStrengths - نقاط القوة", "اختبار الشخصيات الشائع", 
+        "Strong Interest - المسار المهني", "التفكير النقدي", "أسلوب التعامل مع الآخرين", 
+        "قبول الذات والتحفيز", "انعكاس المعتقدات", "WAIS - مقياس الذكاء", "Raven's - المصفوفات", 
+        "WRIT - الذكاء السريع", "الذكاء العاطفي EQ", "Berkeley - الذكاء الانفعالي", 
+        "القلق والاكتئاب", "الحساسية النفسية", "التوتر والإجهاد PSS", "الكمالية والوسواس", "القيادة والاتصال"
+    ];
+
+    let currentQuizIdx = 0;
+    let currentQIdx = 0;
+    let totalScore = 0;
+
+    // بناء القائمة الرئيسية
+    function initMenu() {
+        const menuDiv = document.getElementById('menu');
+        // عرض الاختبارات الموجودة في البيانات + الأسماء الإضافية
+        const allNames = [...allQuizzes.map(q => q.name), ...extraNames];
+        
+        allNames.forEach((name, i) => {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.innerText = `${i+1}. ${name}`;
+            card.onclick = () => startQuiz(i);
+            menuDiv.appendChild(card);
+        });
+    }
+
+    function startQuiz(index) {
+        currentQuizIdx = index;
+        currentQIdx = 0;
+        totalScore = 0;
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('quiz-box').style.display = 'block';
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const quiz = allQuizzes[currentQuizIdx] || { questions: Array(20).fill("سؤال تجريبي: هل تشعر أنك تحقق أهدافك دائماً؟") };
+        document.getElementById('q-info').innerText = `سؤال ${currentQIdx + 1} من 20`;
+        document.getElementById('q-text').innerText = quiz.questions[currentQIdx];
+        document.getElementById('progress').style.width = ((currentQIdx + 1) / 20 * 100) + "%";
+    }
+
+    function handleAnswer(pts) {
+        totalScore += pts;
+        currentQIdx++;
+        if (currentQIdx < 20) {
+            showQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-box').style.display = 'none';
+        document.getElementById('result-box').style.display = 'block';
+        const finalPts = Math.round((totalScore / 40) * 100); // النسبة المئوية
+        document.getElementById('final-score').innerText = finalPts + "%";
+        
+        let msg = "";
+        if(finalPts > 75) msg = "نتيجتك مرتفعة جداً! هذا يشير إلى امتلاكك سمات قوية وواضحة جداً في هذا الجانب من شخصيتك.";
+        else if(finalPts > 40) msg = "نتيجتك متوسطة ومتوازنة. أنت تمثل النمط الشائع الذي يجمع بين المرونة والاستقرار.";
+        else msg = "نتيجتك منخفضة في هذا الاختبار، مما يعكس نمطاً هادئاً أو مختلفاً عن السمات التقليدية لهذا القياس.";
+        
+        document.getElementById('res-desc').innerText = msg;
+    }
+
+    initMenu();
+</script>
+
+</body>
+</html>
